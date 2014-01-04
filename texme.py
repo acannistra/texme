@@ -84,14 +84,14 @@ def texme(args):
 			return 0
 	if (mode == "add"):
 		if add(args.type, args.name, args.value):
-			status('n', "added field successfully")
+			status('n', "added "+ args.type +" field \"" + args.name +"\" successfully")
 			return 1
 		else:
 			status('e', "adding field failed")
 			return 0
 	if (mode == "remove"):
 		if remove(args.type, args.name):
-			status('n', "removed field successfully")
+			status('n', "removed "+ args.type +" field \"" + args.name +"\" successfully")
 			return 1
 		else:
 			status('e', "removing field failed")
@@ -157,6 +157,8 @@ def new(config, outfile):
 
 	if "statics"  in config:
 		statics = config['statics']
+		for i, static in enumerate(statics):
+			to_template[static['name']] = static['value']
 	else:
 		status('s', "no static fields")
 
