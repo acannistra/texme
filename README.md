@@ -10,3 +10,6 @@ In addition, more documentation will be placed here soon.
 
 Finally, there are some dependencies to mention. I'm going to wrap this up
 into a homebrew package soon so they will be easy to deal with.
+
+*In fact* I'd advise that until I can write up a nice how-to-use document, 
+you might be better off waiting.
