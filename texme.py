@@ -18,6 +18,12 @@ defaults.DELIMITERS = ('[[', ']]')
 # parse arguments and dispatch to methods that do the hard work
 
 def main():
+	args = parse_arguments()
+	return texme(args)
+	
+
+#parses command line arguments, returns an argparse namespace
+def parse_arguments():
 	# toplevel parser for getting mode
 	parser = argparse.ArgumentParser(description="a tool for managing LaTeX templates")
 
@@ -30,18 +36,29 @@ def main():
 	# parser for 'new' command
 	parser_new = subparsers.add_parser('new', help="create a new LaTeX document from template")
 	parser_new.add_argument('file', nargs='?', 
-		default="rendered.tex", help="file to place rendered template into")
+		default="rendered.tex", help="rendered template outfile_fp")
 
 	# parser for 'template'
 	parser_template = subparsers.add_parser('template', 
 										    help="install mustache template from file.")
 	parser_template.add_argument('file', help="template filename")
 
-	# parser for 'edit'
-	parser_edit = subparsers.add_parser('edit', help="open an editor to change the configuation file")
+	# parser for 'add'
+	parser_add = subparsers.add_parser('add', help="tell texme about a field, static or variable, in the template")
+	parser_add.add_argument('type', choices=['static', 'variable'], help="type of field to add (static or variable)")
+	parser_add.add_argument('name', help="name of field to add [required]")
+	parser_add.add_argument('value', nargs='?', default=None, help="value of static field [static fields only]")
 
-	args = parser.parse_args()
+	#parser for 'remove'
+	parser_remove = subparsers.add_parser('remove', help="tell texme to forget about a previously-added template field")
+	parser_remove.add_argument('type', choices=['static', 'variable'], help="type of field to remove (static or variable)")
+	parser_remove.add_argument('name', help="name of field to be removed")
 
+	return parser.parse_args()
+
+# dispatches to correct method based on arguments in namespace
+# returns 1 if operation succeeds, 0 othwerwise
+def texme(args):
 	mode = args.mode
 
 	if(mode == 'init'): 
@@ -54,19 +71,32 @@ def main():
 	if(mode == 'new') : 
 		if new(DEFAULT_CONFIG, args.file):
 			status('n', "creation successful")
-			return 0
+			return 1
 		else:
 			status('e', "creation failed")
 			return 0
-	if(mode == "edit"):
-		edit()
 	if(mode == "template"):
 		if template(args.file):
 			status('n', "template install successful")
-			return 0
+			return 1
 		else:
 			status('e', "template install failed")
 			return 0
+	if (mode == "add"):
+		if add(args.type, args.name, args.value):
+			status('n', "added field successfully")
+			return 1
+		else:
+			status('e', "adding field failed")
+			return 0
+	if (mode == "remove"):
+		if remove(args.type, args.name):
+			status('n', "removed field successfully")
+			return 1
+		else:
+			status('e', "removing field failed")
+			return 0
+
 
 
 # initialize a new directory only if a texme 
@@ -102,9 +132,7 @@ def check_install(dir):
 	return True
 
 
-# edit config.json file in an editor
-def edit():
-	pass
+
 
 # create a new document based on template.
 
@@ -127,16 +155,64 @@ def new(config, outfile):
 	else:
 		status("s", "no variables")
 
-	if "defaults"  in config:
-		defaults = config['defaults']
+	if "statics"  in config:
+		statics = config['statics']
 	else:
-		status('s', "no defaults")
+		status('s', "no static fields")
+
 
 	outfile_fp = open(outfile, 'w')
 	outfile_fp.write(render_template(config['template'], to_template));
 	
-	
 	return 1
+
+# add field in template to config file. 
+# supports variable and constant fields
+
+def add(type, name, value=None):
+	if not check_install(DEFAULT_DIRNAME): return False
+	os.chdir(DEFAULT_DIRNAME)
+	config = load_config(DEFAULT_CONFIG)
+
+	if type == "variable":
+		if 'variables' in config:
+			config['variables'].append({"name":name})
+		else:
+			config['variables'] = [{"name":name}]
+	if type == "static":
+		if not value: return False
+		if 'statics' in config:
+			config['statics'].append({"name":name, "value":value})
+		else:
+			config['statics'] = [{"name":name, "value":value}]
+
+	write_config(config)
+	return True
+
+# remove a previously-stored template field 
+# from config file
+def remove(type, name):
+	if not check_install(DEFAULT_DIRNAME): return False
+	os.chdir(DEFAULT_DIRNAME)
+	config = load_config(DEFAULT_CONFIG)
+
+	if type == "variable":
+		if 'variables' in config:
+			config['variables'] = [var for var in config['variables'] if var['name'] != name]
+		else:
+			status('e', "field of " + type +" type named "+ name +" is unknown. aborting")
+			return False
+	if type == "static":
+		if not value: return False
+		if 'statics' in config:
+			config['statics'] = [var for var in config['statics'] if var['name'] != name]
+		else:
+			status('e', "field of " + type +" type named "+ name +" is unknown. aborting")
+			return False
+
+	write_config(config)
+	return True
+
 
 # take a template file and a mapping, 
 #returns a string containing the rendered template
@@ -183,7 +259,7 @@ def template(file):
 
 
 	config['template'] = file
-	filecopy(file_abs, file)
+	filecopy(file_abs, os.path.basename(file))
 
 	write_config(config)
 	return True
