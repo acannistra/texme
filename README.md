@@ -10,8 +10,8 @@ but I hope to add more  features as time allows.
 If you've ever used Git, `texme` uses a similar hierarchy of commands.
 Basically, you'll need the following steps:
 
-1.	`texme init` in the directory that you'd like to track. For me, this action
-will happen in course homework directories (i.e. at the beginning of each 
+1.	`texme init` in the directory that you'd like to track. This only happens once.
+For me, this action will happen in course homework directories (i.e. at the beginning of each 
 semester, once in each course that has LaTeX homework)
 2.	Create a template file. We currently only support simple key:value mappings 
 in the templates, using `[[ key ]]` style delimiters. 
@@ -26,3 +26,14 @@ for each key that you'd like texme to track.
 static and variable keys, prompts the user for the values for the variable keys, 
 and creates a rendered file. The default outfile name is `rendered.tex`; you can 
 pass a desired alternative outfile name as an argument (`texme new outfile.tex`).
+
+`texme new` is the command you'll be running most often, every time that 
+you'd like to create a new document. 
+
+You can see a full description of all arguments using the `-h` flag throughout 
+the program (i.e. `texme -h` and `texme add -h` both work).
+
+## Todo:
+- [ ] Add a `--dir` argument, or maybe a smarter functionality that detects nonexistent 
+but desired output directories, to the `new` method so we can place rendered
+templates in new directories.
