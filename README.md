@@ -1,11 +1,13 @@
-# texme > A script for managing LaTeX templates.
+# texme 
+> A script for managing LaTeX templates.
 
 This originally came out of my hatred of having to manually fill in the
 pertinent fields in LaTeX documents for homework (i.e. homework number, due
 date, collaborators, etc.). This is a barebones first attempt written in a day,
 but I hope to add more  features as time allows.
 
-## Usage: If you've ever used Git, `texme` uses a similar hierarchy of commands.
+## Usage:
+If you've ever used Git, `texme` uses a similar hierarchy of commands.
 Basically, you'll need the following steps:
 
 1.	`texme init` in the directory that you'd like to track. For me, this action
