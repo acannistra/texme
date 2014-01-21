@@ -34,6 +34,6 @@ You can see a full description of all arguments using the `-h` flag throughout
 the program (i.e. `texme -h` and `texme add -h` both work).
 
 ## Todo:
-- [ ] Add a `--dir` argument, or maybe a smarter functionality that detects nonexistent 
+- [x] Add a `--dir` argument, or maybe a smarter functionality that detects nonexistent 
 but desired output directories, to the `new` method so we can place rendered
-templates in new directories.
+templates in new directories. (done)

@@ -36,7 +36,8 @@ def parse_arguments():
 	# parser for 'new' command
 	parser_new = subparsers.add_parser('new', help="create a new LaTeX document from template")
 	parser_new.add_argument('file', nargs='?', 
-		default="rendered.tex", help="rendered template outfile_fp")
+		default="rendered.tex", help="rendered template outfile")
+	parser_new.add_argument('-dir', help="create directory of given name and place rendered template inside")
 
 	# parser for 'template'
 	parser_template = subparsers.add_parser('template', 
@@ -69,7 +70,7 @@ def texme(args):
 			status('e', "initialization failed")
 			return 1
 	if(mode == 'new') : 
-		if new(DEFAULT_CONFIG, args.file):
+		if new(DEFAULT_CONFIG, args.file, dir=args.dir):
 			status('n', "creation successful")
 			return 1
 		else:
@@ -136,13 +137,14 @@ def check_install(dir):
 
 # create a new document based on template.
 
-def new(config, outfile):
+def new(config, outfile, dir=None):
 	if not check_install(DEFAULT_DIRNAME): return False
 
 	os.chdir(DEFAULT_DIRNAME)
 	config = load_config(config)
 	os.chdir("..")
 	to_template = {}
+
 
 	if "template" not in config:
 		status('e', "no template installed. see help for details.")
@@ -162,9 +164,18 @@ def new(config, outfile):
 	else:
 		status('s', "no static fields")
 
+	if dir:
+		try:
+			os.mkdir(dir)
+		except OSError as e:
+			if e[0] == 17: # file exists
+				status('w', "this directory already exists, creating file within")
 
-	outfile_fp = open(outfile, 'w')
-	outfile_fp.write(render_template(config['template'], to_template));
+		outfile_fp = open(dir+'/'+outfile, 'w')
+	else:
+		outfile_fp = open(outfile, 'w')
+		
+	outfile_fp.write(render_template(os.path.abspath(DEFAULT_DIRNAME)+'/'+config['template'], to_template));
 	
 	return 1
 
